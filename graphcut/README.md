@@ -42,3 +42,4 @@ III. Future changes
 This project currently uses CMake and CLion/Visual Studio for configuration and building.
 make, automake, and autoconf will be used instead of cmake to build an *.so file.
 How parameters are passed to the function may change.
+No make files
