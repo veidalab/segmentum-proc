@@ -37,7 +37,7 @@ using namespace cv;
 int main(char *filepath, char *filepathRAW)
 {
 	//...Variables defined...//
-	int dims; double* spacing;
+	int dims; double* spacing; int value;
 	int idx = 0, x, y, z, framesize;
 	ifstream inFile; ofstream outFile;
 	char * file; char* datafile; char* maskfile;
@@ -47,11 +47,11 @@ int main(char *filepath, char *filepathRAW)
 
 	//...Retrieve information on the data dimensions, type, and size...//
 	
-	file = filepath; //NULL if we do not have an mha
-	datafile = filepathRAW;
+	//file = filepath; //NULL if we do not have an mha
+	//datafile = filepathRAW;
 	
-	//file = "Foot.mha";
-	//datafile = "Foot.raw";
+	file = "Foot.mha";
+	datafile = "Foot.raw";
 
 	inFile.open(file);
 	if (inFile.is_open()) {
@@ -130,59 +130,49 @@ int main(char *filepath, char *filepathRAW)
 	cv::Mat img_bw(size[0], size[1], CV_8UC(1), Scalar::all(0)); //create binary slice output
 	cv::Mat mask(3, size, CV_8UC(1), Scalar::all(0)); //create final binary volume
 
-	for (int k = 0; k < size[2]; k++)
-	{
-		for (int i = 0; i < size[0]; i++) {
-		for (int j = 0; j < size[1]; j++)
+	maskfile = "Mask.3dm";
+	outFile.open(maskfile);
+	outFile << "..m.." << " ";
+
+	for (int i = 0; i<size[0]; i++) {
+		for (int j = 0; j<size[1]; j++) {
+			for (int k = 0; k<size[2]; k++)
 		{
 			
-				slice.at<unsigned char>(i, j) = volume.at<unsigned char>(i, j, k); //fill in original intensity values of slice
+				slice.at<unsigned char>(j,k) = volume.at<unsigned char>(i, j, k); //fill in original intensity values of slice
 				//cout << int(slice.at<unsigned char>(i, j)) << " ";
 				
 			}
 		}
+		//namedWindow("imgs", 0);
+		//imshow("imgs", slice);
+		//waitKey(0);
 
 		//...Otsu's Thresholding...//
-		GaussianBlur(slice, smooth, Size(5,5), 0, 0);
-		cv::threshold(smooth, img_bw, 0, 1, CV_THRESH_BINARY | CV_THRESH_OTSU);
+		//GaussianBlur(slice, smooth, Size(5,5), 0, 0);
+		cv::threshold(slice, img_bw, 0,255, CV_THRESH_TOZERO| CV_THRESH_OTSU);
 		//namedWindow("Otsu", 0);
 		//imshow("Otsu", img_bw);
 		//waitKey(0);
-		for (int i = 0; i < size[0]; i++) {
-			for (int j = 0; j < size[1]; j++)
-			{
-				mask.at<unsigned char>(i, j, k) = img_bw.at<unsigned char>(i, j);//fill in binary mask																		   //cout << int(slice.at<unsigned char>(i, j)) << " ";
 
+		//...Write to file...//
+		for (int j = 0; j<size[1]; j++) {
+			for (int k = 0; k<size[2]; k++)
+			{
+				outFile << int(img_bw.at<unsigned char>(j, k)) << " ";
 			}
 		}
-
+		outFile << "..m..";
 		slice = Scalar::all(0); smooth = Scalar::all(0); img_bw = Scalar::all(0);
 
 	}
 
 	slice.release(); smooth.release(); img_bw.release();
 
-	//...Write mask to file...//
-	maskfile = "Mask.3dm";
-	outFile.open(maskfile);
-	outFile << "..m.." << " ";
-	int val;
-	for (int k = 0; k < size[2]; k++)
-	{
-		for (int i = 0; i < size[0]; i++) {
-			for (int j = 0; j < size[1]; j++)
-			{
-				val = int(mask.at<unsigned char>(i, j, k));
-				outFile << val << " ";
-			}
-		}
-		outFile << "..m..";
-	}
 	outFile.close();
+
 	mask.release();
-	std::cout << "\n3D Mask filename:" << maskfile;
-	//waitKey(0);
-	//t1=clock(); 
+	std::cout << "\n3D Mask filename:" << maskfile << "\n";
 	system("pause");
 
   return EXIT_SUCCESS;
