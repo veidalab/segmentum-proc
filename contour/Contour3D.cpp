@@ -47,20 +47,12 @@ int main(char *filepath, char *filepathRAW)
 
 	//...Retrieve information on the data dimensions, type, and size...//
 	
-	//file = filepath; //NULL if we do not have an mha
-	//datafile = filepathRAW;
+	file = filepath; //NULL if we do not have an mha
+	datafile = filepathRAW;
 	
-	file = "Foot.mha";
-	datafile = "Foot.raw";
+	/*file = "Foot.mha";
+	datafile = "Foot.raw";*/
 
-	inFile.open(file);
-	if (inFile.is_open()) {
-		std::cout << "Retrieving data\n";
-	}
-	else {
-		//std::cout << "Error opening file\n";
-		return 1;
-	}
 	FILE * f = fopen(datafile, "rb");
 	if (!f)
 	{
@@ -70,6 +62,15 @@ int main(char *filepath, char *filepathRAW)
 
 	if (file != NULL)
 	{
+		inFile.open(file);
+		if (inFile.is_open()) {
+			std::cout << "Retrieving data\n";
+		}
+		else {
+			//std::cout << "Error opening file\n";
+			return 1;
+		}
+
 		inFile >> info >> eq >> dims;
 		if (info.find("NDims") != std::string::npos)
 		{
